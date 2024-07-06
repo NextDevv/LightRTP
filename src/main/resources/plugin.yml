@@ -1,0 +1,24 @@
+name: LightRTP
+version: '${version}'
+main: com.nextdevv.lightrtp.LightRTP
+api-version: '1.17'
+commands:
+    rtp:
+        description: LightRTP command
+        usage: /<command>
+        aliases: [randomtp]
+        permission: lightrtp.rtp
+    lightrtp:
+        description: LightRTP command
+        usage: /<command> <args>
+        aliases: [lrtp]
+        permission: lightrtp.admin
+
+
+permissions:
+    lightrtp.rtp:
+        description: Allows the player to use the /rtp command
+        default: true
+    lightrtp.admin:
+        description: Allows the player to use the /lightrtp command
+        default: op
