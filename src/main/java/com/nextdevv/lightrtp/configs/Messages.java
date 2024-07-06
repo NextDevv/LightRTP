@@ -16,4 +16,8 @@ public class Messages {
     String youMoved = "{prefix}&7 You moved while we were finding a safe location!";
     String retrying = "{prefix}&7 Retrying... attempt &6{attempt}&7/&6{maxAttempts}!";
     String cooldown = "{prefix}&7 You must wait &6{time}&7 seconds before using this command again!";
+    String notTeleporting = "{prefix}&7 You aren't teleporting right now!";
+    String cancelled = "{prefix}&7 Teleportation cancelled!";
+    String alreadyTeleporting = "{prefix}&7 You are already teleporting!";
+    String netherNotAllowed = "{prefix}&7 You are not allowed to &6rtp&7 in the nether!";
 }

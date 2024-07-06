@@ -61,6 +61,9 @@ public class Settings {
     })
     int zBoundary = 100000;
 
+    @Comment("Allow tp in the nether.")
+    boolean nether = false;
+
     @Comment("Allow tp to caves.")
     boolean caves = false;
 

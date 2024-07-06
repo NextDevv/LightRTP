@@ -6,6 +6,7 @@ import com.nextdevv.lightrtp.managers.RtpManager;
 import com.nextdevv.lightrtp.utils.ChatUtils;
 import com.nextdevv.lightrtp.utils.Pair;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -26,6 +27,8 @@ public class RtpCommand implements CommandExecutor, TabExecutor {
     LightRTP plugin;
     RtpManager rtpManager;
     HashMap<UUID, Long> cooldowns = new HashMap<>();
+    HashMap<UUID, Boolean> executing = new HashMap<>();
+    HashMap<UUID, Boolean> stop = new HashMap<>();
 
     public RtpCommand(LightRTP plugin) {
         this.plugin = plugin;
@@ -44,6 +47,11 @@ public class RtpCommand implements CommandExecutor, TabExecutor {
             return true;
         }
 
+        if(player.getWorld().getEnvironment() == World.Environment.NETHER && !plugin.getSettings().isNether()) {
+            msg(sender, plugin.getMessages().getNetherNotAllowed());
+            return true;
+        }
+
         long cooldown = plugin.getSettings().getCommandCooldown();
         if(cooldowns.containsKey(player.getUniqueId())) {
             long last = cooldowns.get(player.getUniqueId());
@@ -57,6 +65,24 @@ public class RtpCommand implements CommandExecutor, TabExecutor {
             } else cooldowns.remove(player.getUniqueId());
         }
 
+        if(args.length == 1 && args[0].equalsIgnoreCase("stop")) {
+            if(!executing.get(player.getUniqueId())) {
+                msg(player, plugin.getMessages().getNotTeleporting());
+                return true;
+            }
+
+            executing.put(player.getUniqueId(), false);
+            stop.put(player.getUniqueId(), true);
+            msg(player, plugin.getMessages().getCancelled());
+            return true;
+        }
+
+        if(executing.get(player.getUniqueId()) != null && executing.get(player.getUniqueId())) {
+            msg(player, plugin.getMessages().getAlreadyTeleporting());
+            return true;
+        }
+
+        executing.put(player.getUniqueId(), true);
         new BukkitRunnable() {
             @Override
             public void run() {
@@ -95,12 +121,19 @@ public class RtpCommand implements CommandExecutor, TabExecutor {
             @Override
             public void run() {
                 try {
+                    if(stop.get(player.getUniqueId()) != null && stop.get(player.getUniqueId())) {
+                        stop.put(player.getUniqueId(), false);
+                        return;
+                    }
+
                     if(future.get().getB() == TpStatus.MOVED) {
+                        executing.put(player.getUniqueId(), false);
                         return;
                     }
 
                     if(tryCount >= plugin.getSettings().getMaxAttempts()) {
                         msg(player, plugin.getMessages().getError());
+                        executing.put(player.getUniqueId(), false);
                         return;
                     }
 
@@ -124,19 +157,22 @@ public class RtpCommand implements CommandExecutor, TabExecutor {
 
                     if(player.isInWater()) {
                         if(!plugin.getSettings().isWater()) {
-                            player.teleport(initial);
                             msg(player, plugin.getMessages().getRetrying()
                                     .replace("{attempt}", String.valueOf(tryCount + 1))
                                     .replace("{maxAttempts}", String.valueOf(plugin.getSettings().getMaxAttempts())));
                             doAsync(() -> processTp(player, tryCount + 1));
+                            executing.put(player.getUniqueId(), false);
                             return;
                         }
                     }
+
                     actionBar(player, plugin.getMessages().getTeleported());
                     cooldowns.put(player.getUniqueId(), System.currentTimeMillis());
                 } catch (InterruptedException | ExecutionException e) {
                     msg(player, plugin.getMessages().getError());
                     throw new RuntimeException(e);
+                } finally {
+                    executing.put(player.getUniqueId(), false);
                 }
             }
         }.runTask(plugin);
@@ -153,6 +189,6 @@ public class RtpCommand implements CommandExecutor, TabExecutor {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
-        return List.of();
+        return List.of("stop");
     }
 }

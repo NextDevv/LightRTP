@@ -6,6 +6,7 @@ import com.nextdevv.lightrtp.enums.TpStatus;
 import com.nextdevv.lightrtp.utils.Pair;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.WorldType;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -23,6 +24,9 @@ public class RtpManager {
     LightRTP plugin;
     SecureRandom secureRandom = new SecureRandom();
     Random random = new Random();
+
+    final int MAX_NETHER_HEIGHT = 128;
+    final int MIN_NETHER_HEIGHT = 0;
 
     public RtpManager(LightRTP plugin) {
         this.plugin = plugin;
@@ -68,6 +72,10 @@ public class RtpManager {
                     }
                 }
 
+                if(player.getWorld().getEnvironment() == World.Environment.NETHER && plugin.getSettings().isNether())
+                    if(y >= 128 || y < 0)
+                        y = 0;
+
                 if(y >= 320 || y <= -64)
                     y = 0;
 
@@ -101,10 +109,12 @@ public class RtpManager {
                     }
 
                     if(!plugin.getSettings().isCaves()) {
-                        int lightFromSky = block.getLightFromSky();
-                        if(lightFromSky < 15) {
-                            y++;
-                            continue;
+                        if(player.getWorld().getEnvironment() != World.Environment.NETHER) {
+                            int lightFromSky = block.getLightFromSky();
+                            if(lightFromSky < 15) {
+                                y++;
+                                continue;
+                            }
                         }
                     }
 
