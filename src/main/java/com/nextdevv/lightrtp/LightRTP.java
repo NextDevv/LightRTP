@@ -6,6 +6,7 @@ import com.nextdevv.lightrtp.configs.ConfigLoader;
 import com.nextdevv.lightrtp.configs.Messages;
 import com.nextdevv.lightrtp.configs.Settings;
 import com.nextdevv.lightrtp.metrics.Metrics;
+import com.nextdevv.lightrtp.utils.VersionChecker;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -17,6 +18,7 @@ import java.util.Objects;
 public final class LightRTP extends JavaPlugin {
     Settings settings;
     Messages messages;
+    VersionChecker versionChecker = new VersionChecker("NextDevv/LightRTP", this);
 
     @Override
     public void onEnable() {
