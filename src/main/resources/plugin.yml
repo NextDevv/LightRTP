@@ -8,6 +8,16 @@ commands:
         usage: /<command>
         aliases: [randomtp]
         permission: lightrtp.rtp
+    rtpnear:
+        description: LightRTP command
+        usage: /<command>
+        aliases: [rtpn]
+        permission: lightrtp.rtpnear
+    rtpcave:
+        description: LightRTP command
+        usage: /<command>
+        aliases: [rtpc]
+        permission: lightrtp.rtpcave
     lightrtp:
         description: LightRTP command
         usage: /<command> <args>
@@ -22,3 +32,9 @@ permissions:
     lightrtp.admin:
         description: Allows the player to use the /lightrtp command
         default: op
+    lightrtp.rtpnear:
+        description: Allows the player to use the /rtpnear command
+        default: true
+    lightRTP.rtpcave:
+        description: Allows the player to use the /rtpcave command
+        default: true

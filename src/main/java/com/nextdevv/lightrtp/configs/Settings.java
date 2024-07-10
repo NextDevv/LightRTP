@@ -61,6 +61,18 @@ public class Settings {
     })
     int zBoundary = 100000;
 
+    @Comment({
+            "X Boundary for random location selection near the player location.",
+            "Default: 100"
+    })
+    int xBoundaryNear = 100;
+
+    @Comment({
+            "Z Boundary for random location selection near the player location.",
+            "Default: 100"
+    })
+    int zBoundaryNear = 100;
+
     @Comment("Allow tp in the nether.")
     boolean nether = false;
 

@@ -3,6 +3,7 @@ package com.nextdevv.lightrtp.managers;
 import com.nextdevv.lightrtp.LightRTP;
 import com.nextdevv.lightrtp.enums.RandomOption;
 import com.nextdevv.lightrtp.enums.TpStatus;
+import com.nextdevv.lightrtp.utils.IntUtils;
 import com.nextdevv.lightrtp.utils.Pair;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -32,13 +33,16 @@ public class RtpManager {
         this.plugin = plugin;
     }
 
-    public Future<Pair<Location, TpStatus>> generate(Player player) {
+    public Future<Pair<Location, TpStatus>> generate(Player player, Boolean near, Boolean cave) {
         return CompletableFuture.supplyAsync(() -> {
             Location initial = player.getLocation().clone();
             int playerY = initial.getBlockY();
             long seed = plugin.getSettings().getSeed();
             int xBoundary = plugin.getSettings().getXBoundary();
             int zBoundary = plugin.getSettings().getZBoundary();
+
+            int xBoundaryNear = plugin.getSettings().getXBoundaryNear();
+            int zBoundaryNear = plugin.getSettings().getZBoundaryNear();
 
             int x, z;
 
@@ -48,16 +52,35 @@ public class RtpManager {
 
             if(plugin.getSettings().getRandomOption() == RandomOption.SECURE_RANDOM) {
                 secureRandom.setSeed(seed);
-                x = secureRandom.nextInt(xBoundary * 2) - xBoundary;
-                z = secureRandom.nextInt(zBoundary * 2) - zBoundary;
-            } else {
+                if(!near) {
+                    x = secureRandom.nextInt(xBoundary * 2) - xBoundary;
+                    z = secureRandom.nextInt(zBoundary * 2) - zBoundary;
+                } else {
+                    x = initial.getBlockX() + secureRandom.nextInt(xBoundaryNear) - xBoundaryNear;
+                    z = initial.getBlockZ() + secureRandom.nextInt(zBoundaryNear) - zBoundaryNear;
+                }
+
+            } else if(plugin.getSettings().getRandomOption() == RandomOption.RANDOM) {
                 random.setSeed(seed);
-                x = random.nextInt(xBoundary * 2) - xBoundary;
-                z = random.nextInt(zBoundary * 2) - zBoundary;
+                if(!near) {
+                    x = random.nextInt(xBoundary * 2) - xBoundary;
+                    z = random.nextInt(zBoundary * 2) - zBoundary;
+                } else {
+                    x = initial.getBlockX() + random.nextInt(xBoundaryNear) - xBoundaryNear;
+                    z = initial.getBlockZ() + random.nextInt(zBoundaryNear) - zBoundaryNear;
+                }
+            } else {
+                if(!near) {
+                    x = ThreadLocalRandom.current().nextInt(xBoundary * 2) - xBoundary;
+                    z = ThreadLocalRandom.current().nextInt(zBoundary * 2) - zBoundary;
+                } else {
+                    x = initial.getBlockX() + ThreadLocalRandom.current().nextInt(xBoundaryNear) - xBoundaryNear;
+                    z = initial.getBlockZ() + ThreadLocalRandom.current().nextInt(zBoundaryNear) - zBoundaryNear;
+                }
             }
 
             boolean found = false;
-            int y = playerY;
+            int y = !cave ? playerY : -64;
             long startTime = System.currentTimeMillis();
             while(!found) {
                 if(System.currentTimeMillis() - startTime > plugin.getSettings().getTimeout()) {
@@ -108,13 +131,21 @@ public class RtpManager {
                         }
                     }
 
-                    if(!plugin.getSettings().isCaves()) {
+                    if(!plugin.getSettings().isCaves() && !cave) {
                         if(player.getWorld().getEnvironment() != World.Environment.NETHER) {
                             int lightFromSky = block.getLightFromSky();
                             if(lightFromSky < 15) {
                                 y++;
                                 continue;
                             }
+                        }
+                    }
+
+                    if(cave) {
+                        int lightFromSky = block.getLightFromSky();
+                        if(lightFromSky >= 5) {
+                            y++;
+                            continue;
                         }
                     }
 

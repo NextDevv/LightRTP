@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'com.nextdevv'
-version = '0.1.9-release'
+version = '1.1.9-release'
 
 repositories {
     mavenCentral()

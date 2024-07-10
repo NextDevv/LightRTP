@@ -86,20 +86,20 @@ public class RtpCommand implements CommandExecutor, TabExecutor {
         new BukkitRunnable() {
             @Override
             public void run() {
-                processTp(player, 0);
+                processTp(player, 0, command.getName().equals("rtpnear"), command.getName().equals("rtpcave"));
             }
         }.runTaskAsynchronously(plugin);
 
         return true;
     }
 
-    private void processTp(Player player, int tryCount) {
+    private void processTp(Player player, int tryCount, boolean near, boolean cave) {
         if(tryCount >= plugin.getSettings().getMaxAttempts()) {
             msg(player, plugin.getMessages().getError());
             return;
         }
 
-        Future<Pair<Location, TpStatus>> future = rtpManager.generate(player);
+        Future<Pair<Location, TpStatus>> future = rtpManager.generate(player, near, cave);
         Location initial = player.getLocation().clone();
         msg(player, plugin.getMessages().getLoadingPosition());
         while (!future.isDone()) {
@@ -113,10 +113,10 @@ public class RtpCommand implements CommandExecutor, TabExecutor {
             }
         }
 
-        tpSync(future, player, initial, tryCount);
+        tpSync(future, player, initial, tryCount, near, cave);
     }
 
-    private void tpSync(Future<Pair<Location, TpStatus>> future, Player player, Location initial, int tryCount) {
+    private void tpSync(Future<Pair<Location, TpStatus>> future, Player player, Location initial, int tryCount, boolean near, boolean cave) {
         new BukkitRunnable() {
             @Override
             public void run() {
@@ -141,7 +141,7 @@ public class RtpCommand implements CommandExecutor, TabExecutor {
                         msg(player, plugin.getMessages().getRetrying()
                                 .replace("{attempt}", String.valueOf(tryCount + 1))
                                 .replace("{maxAttempts}", String.valueOf(plugin.getSettings().getMaxAttempts())));
-                        doAsync(() -> processTp(player, tryCount + 1));
+                        doAsync(() -> processTp(player, tryCount + 1, near, cave));
                         return;
                     }
 
@@ -160,7 +160,7 @@ public class RtpCommand implements CommandExecutor, TabExecutor {
                             msg(player, plugin.getMessages().getRetrying()
                                     .replace("{attempt}", String.valueOf(tryCount + 1))
                                     .replace("{maxAttempts}", String.valueOf(plugin.getSettings().getMaxAttempts())));
-                            doAsync(() -> processTp(player, tryCount + 1));
+                            doAsync(() -> processTp(player, tryCount + 1, near, cave));
                             executing.put(player.getUniqueId(), false);
                             return;
                         }

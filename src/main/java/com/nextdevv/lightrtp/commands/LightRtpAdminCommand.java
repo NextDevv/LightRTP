@@ -109,7 +109,7 @@ public class LightRtpAdminCommand implements CommandExecutor, TabExecutor {
                 case "setseed":
                     List<Long> randoms = new ArrayList<>();
                     for(int i = 0; i < 10; i++) {
-                        randoms.add((long) (Math.random() * 10000));
+                        randoms.add((long) (Math.random() * 10000000));
                     }
                     return List.of(randoms.stream().map(String::valueOf).toArray(String[]::new));
                 case "setboundary": return List.of("1000", "10000", "100000");

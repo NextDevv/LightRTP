@@ -11,6 +11,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.net.URISyntaxException;
 import java.util.Objects;
 
 @Setter
@@ -18,7 +19,7 @@ import java.util.Objects;
 public final class LightRTP extends JavaPlugin {
     Settings settings;
     Messages messages;
-    VersionChecker versionChecker = new VersionChecker("NextDevv/LightRTP", this);
+    VersionChecker versionChecker;
 
     @Override
     public void onEnable() {
@@ -32,8 +33,23 @@ public final class LightRTP extends JavaPlugin {
         getLogger().info("Loading commands...");
         Objects.requireNonNull(getCommand("rtp")).setExecutor(new RtpCommand(this));
         Objects.requireNonNull(getCommand("rtp")).setTabCompleter(new RtpCommand(this));
+
+        Objects.requireNonNull(getCommand("rtpnear")).setExecutor(new RtpCommand(this));
+        Objects.requireNonNull(getCommand("rtpnear")).setTabCompleter(new RtpCommand(this));
+
+        Objects.requireNonNull(getCommand("rtpcave")).setExecutor(new RtpCommand(this));
+        Objects.requireNonNull(getCommand("rtpcave")).setTabCompleter(new RtpCommand(this));
+
         Objects.requireNonNull(getCommand("lightrtp")).setExecutor(new LightRtpAdminCommand(this));
         Objects.requireNonNull(getCommand("lightrtp")).setTabCompleter(new LightRtpAdminCommand(this));
+
+        getLogger().info("Searching for updates...");
+        try {
+            versionChecker = new VersionChecker("NextDevv/LightRTP", this);
+            versionChecker.checkVersion(getDescription().getVersion());
+        } catch (URISyntaxException e) {
+            getLogger().warning("Failed to check for updates.");
+        }
 
         getLogger().info("Loading metrics...");
         new Metrics(this, 22543);
